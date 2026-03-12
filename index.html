@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FF8C42">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Organizer">
+    <title>Daily Organizer Hub</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --arancio: #FF8C42;
+            --verde-oliva: #8B4513;
+            --terra: #D2691E;
+            --crema: #F5DEB3;
+            --bg-light: #fafaf8;
+            --bg-dark: #1a1a18;
+            --text-light: #333;
+            --text-dark: #f5f5f0;
+            --border-light: #e0d7c3;
+            --border-dark: #3a3a38;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+
+        body.dark-mode {
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 20px;
+            padding-bottom: 100px;
+            min-height: 100vh;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--arancio);
+        }
+
+        header h1 {
+            font-size: 24px;
+            color: var(--arancio);
+        }
+
+        .dark-toggle {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .dark-toggle:hover {
+            transform: scale(1.2);
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* ===== HOME SECTION ===== */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .card-overview {
+            background: linear-gradient(135deg, var(--arancio), var(--terra));
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .card-overview h3 {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .card-overview .value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* ===== SPESA SECTION ===== */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        body.dark-mode .input-group input {
+            background-color: #2a2a28;
+            color: var(--text-dark);
+            border-color: var(--border-dark);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--arancio);
+        }
+
+        .btn {
+            padding: 12px 20px;
+            background-color: var(--arancio);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--terra);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-success {
+            background-color: #27ae60;
+        }
+
+        .btn-success:hover {
+            background-color: #229954;
+        }
+
+        .list-container {
+            margin-top: 20px;
+        }
+
+        .list-item {
+            background-color: var(--bg-light);
+            border: 2px solid var(--border-light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .list-item {
+            background-color: #2a2a28;
+            border-color: var(--border-dark);
+        }
+
+        .list-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .list-item-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .list-item-content input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--arancio);
+        }
+
+        .list-item-text {
+            margin-left: 10px;
+            flex: 1;
+        }
+
+        .list-item-text.checked {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .list-item-price {
+            font-weight: bold;
+            color: var(--arancio);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .total-budget {
+            margin-top: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--arancio), var(--terra));
+            color: white;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        /* ===== DISPENSA SECTION ===== */
+        .category-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 15px;
+            background-color: var(--border-light);
+            border: 2px solid var(--arancio);
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .filter-btn {
+            background-color: var(--border-dark);
+        }
+
+        .filter-btn.active {
+            background-color: var(--arancio);
+            color: white;
+        }
+
+        .food-item {
+            background-color: var(--bg-light);
+            border: 2px solid var(--border-light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        body.dark-mode .food-item {
+            background-color: #2a2a28;
+            border-color: var(--border-dark);
+        }
+
+        .food-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            background-color: var(--crema);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .food-image:hover {
+            transform: scale(1.05);
+        }
+
+        .food-details {
+            flex: 1;
+        }
+
+        .food-details h3 {
+            margin-bottom: 5px;
+            color: var(--arancio);
+        }
+
+        .food-expiry {
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .food-expiry.expiring-soon {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .food-category {
+            display: inline-block;
+            background-color: var(--verde-oliva);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-right: 5px;
+        }
+
+        /* ===== CICLO SECTION ===== */
+        .cycle-info {
+            background-color: var(--crema);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--arancio);
+        }
+
+        body.dark-mode .cycle-info {
+            background-color: #3a3a38;
+            border-left-color: var(--arancio);
+        }
+
+        .cycle-info h3 {
+            color: var(--arancio);
+            margin-bottom: 10px;
+        }
+
+        .cycle-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .day-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            background-color: var(--border-light);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .day-cell {
+            background-color: var(--border-dark);
+        }
+
+        .day-cell.cycle-day {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .day-cell.fertile-day {
+            background: linear-gradient(135deg, var(--arancio), var(--terra));
+            color: white;
+        }
+
+        .day-cell.ovulation-day {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .symptoms-list {
+            margin-top: 20px;
+        }
+
+        .symptom-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            margin-bottom: 8px;
+            background-color: rgba(255, 140, 66, 0.1);
+            border-radius: 6px;
+        }
+
+        .symptom-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--arancio);
+        }
+
+        /* ===== WELLNESS SECTION ===== */
+        .checklist {
+            margin-top: 20px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background-color: var(--bg-light);
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        body.dark-mode .checklist-item {
+            background-color: #2a2a28;
+            border-color: var(--border-dark);
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: var(--arancio);
+        }
+
+        .checklist-item.completed label {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .checklist-item label {
+            flex: 1;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .chart-container {
+            margin-top: 30px;
+            background-color: var(--bg-light);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid var(--border-light);
+        }
+
+        body.dark-mode .chart-container {
+            background-color: #2a2a28;
+            border-color: var(--border-dark);
+        }
+
+        .chart-bars {
+            display: flex;
+            gap: 5px;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 150px;
+            margin-top: 20px;
+        }
+
+        .bar {
+            flex: 1;
+            background: linear-gradient(180deg, var(--arancio), var(--terra));
+            border-radius: 4px 4px 0 0;
+            min-height: 10px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .bar:hover {
+            opacity: 0.8;
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* ===== PROMEMORIA SECTION ===== */
+        .reminder-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .reminder-input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background-color: var(--bg-light);
+            color: var(--text-light);
+        }
+
+        body.dark-mode .reminder-input-group input {
+            background-color: #2a2a28;
+            color: var(--text-dark);
+            border-color: var(--border-dark);
+        }
+
+        .floating-reminder {
+            position: fixed;
+            bottom: 120px;
+            right: 20px;
+            background: white;
+            border: 3px solid var(--arancio);
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 300px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s;
+        }
+
+        body.dark-mode .floating-reminder {
+            background-color: #2a2a28;
+            color: var(--text-dark);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .floating-reminder h4 {
+            color: var(--arancio);
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .floating-reminder .text {
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .reminder-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .reminder-actions button {
+            padding: 8px 12px;
+            font-size: 13px;
+            border-radius: 6px;
+        }
+
+        .reminder-actions .btn-warning {
+            background-color: #f39c12;
+        }
+
+        .reminder-actions .btn-warning:hover {
+            background-color: #d68910;
+        }
+
+        /* ===== BOTTOM NAV ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--bg-light);
+            border-top: 2px solid var(--border-light);
+            display: flex;
+            justify-content: space-around;
+            z-index: 999;
+        }
+
+        body.dark-mode .bottom-nav {
+            background-color: #2a2a28;
+            border-top-color: var(--border-dark);
+        }
+
+        .nav-item {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-top: 3px solid transparent;
+            font-size: 24px;
+        }
+
+        .nav-item:active {
+            background-color: rgba(255, 140, 66, 0.1);
+        }
+
+        .nav-item.active {
+            border-top-color: var(--arancio);
+            background-color: rgba(255, 140, 66, 0.05);
+        }
+
+        .nav-label {
+            font-size: 11px;
+            display: block;
+            margin-top: 3px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            header h1 {
+                font-size: 20px;
+            }
+
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+        }
+
+        /* ===== MODAL STYLE ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg-light);
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 90%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode .modal-content {
+            background-color: #2a2a28;
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--arancio);
+        }
+
+        .modal-close:hover {
+            color: var(--terra);
+        }
+
+        .image-upload {
+            margin: 20px 0;
+        }
+
+        .image-upload input[type="file"] {
+            display: block;
+            margin-top: 10px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌻 Daily Organizer Hub</h1>
+            <button class="dark-toggle" id="darkToggle">🌙</button>
+        </header>
+
+        <!-- HOME SECTION -->
+        <section class="section active" id="homeSection">
+            <h2>Dashboard Giornaliero</h2>
+            <div class="dashboard">
+                <div class="card-overview">
+                    <h3>🛒 Spesa</h3>
+                    <div class="value" id="shoppingCount">0</div>
+                    <small id="shoppingBudget">€0.00</small>
+                </div>
+                <div class="card-overview">
+                    <h3>🍲 Dispensa</h3>
+                    <div class="value" id="foodCount">0</div>
+                    <small id="foodExpiring">In scadenza</small>
+                </div>
+                <div class="card-overview">
+                    <h3>✨ Wellness</h3>
+                    <div class="value" id="wellnessCount">0%</div>
+                    <small>Oggi</small>
+                </div>
+                <div class="card-overview">
+                    <h3>🌸 Ciclo</h3>
+                    <div class="value" id="cyclePhase">—</div>
+                    <small id="cycleInfo">N/A</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- SPESA SECTION -->
+        <section class="section" id="shoppingSection">
+            <h2>🛒 Lista Spesa</h2>
+            <div class="input-group">
+                <input type="text" id="itemName" placeholder="Nome articolo..." />
+                <input type="number" id="itemPrice" placeholder="€ Prezzo" min="0" step="0.01" />
+                <button class="btn" onclick="addShoppingItem()">Aggiungi</button>
+            </div>
+            <div class="list-container" id="shoppingList"></div>
+            <div class="total-budget">
+                Totale: € <span id="totalSpent">0.00</span>
+            </div>
+        </section>
+
+        <!-- DISPENSA SECTION -->
+        <section class="section" id="foodSection">
+            <h2>🍲 Dispensa</h2>
+            <div class="input-group">
+                <input type="text" id="foodName" placeholder="Nome cibo..." />
+                <select id="foodCategory" style="padding: 12px; border: 2px solid var(--border-light); border-radius: 8px; background-color: var(--bg-light); color: var(--text-light);">
+                    <option value="Frigo">🧊 Frigo</option>
+                    <option value="Freezer">❄️ Freezer</option>
+                    <option value="Dispensa">📦 Dispensa</option>
+                </select>
+                <input type="date" id="foodExpiry" />
+                <button class="btn" onclick="addFoodItem()">Aggiungi</button>
+            </div>
+            
+            <div class="category-filter">
+                <button class="filter-btn active" onclick="filterFood('all')">Tutti</button>
+                <button class="filter-btn" onclick="filterFood('Frigo')">🧊 Frigo</button>
+                <button class="filter-btn" onclick="filterFood('Freezer')">❄️ Freezer</button>
+                <button class="filter-btn" onclick="filterFood('Dispensa')">📦 Dispensa</button>
+            </div>
+            
+            <div class="list-container" id="foodList"></div>
+        </section>
+
+        <!-- CICLO SECTION -->
+        <section class="section" id="cycleSection">
+            <h2>🌸 Tracker Mestruale</h2>
+            
+            <div class="cycle-info">
+                <h3>Informazioni Ciclo</h3>
+                <div id="cycleStats"></div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label><strong>Ultimo ciclo:</strong></label>
+                <input type="date" id="lastCycleDate" style="width: 100%; padding: 10px; margin-top: 5px; border: 2px solid var(--border-light); border-radius: 8px; background-color: var(--bg-light); color: var(--text-light);">
+                <button class="btn" onclick="saveCycleData()" style="margin-top: 10px; width: 100%;">Salva</button>
+            </div>
+
+            <h3 style="margin-top: 20px; margin-bottom: 10px;">Calendario</h3>
+            <div class="cycle-calendar" id="cycleCalendar"></div>
+
+            <div class="symptoms-list">
+                <h3 style="margin-bottom: 10px;">Sintomi Oggi</h3>
+                <div class="symptom-item">
+                    <input type="checkbox" id="symptom-cramps" onchange="saveSymptomsData()">
+                    <label for="symptom-cramps">Crampi</label>
+                </div>
+                <div class="symptom-item">
+                    <input type="checkbox" id="symptom-fatigue" onchange="saveSymptomsData()">
+                    <label for="symptom-fatigue">Affaticamento</label>
+                </div>
+                <div class="symptom-item">
+                    <input type="checkbox" id="symptom-mood" onchange="saveSymptomsData()">
+                    <label for="symptom-mood">Sbalzi d'umore</label>
+                </div>
+                <div class="symptom-item">
+                    <input type="checkbox" id="symptom-bloating" onchange="saveSymptomsData()">
+                    <label for="symptom-bloating">Gonfiore</label>
+                </div>
+                <div class="symptom-item">
+                    <input type="checkbox" id="symptom-headache" onchange="saveSymptomsData()">
+                    <label for="symptom-headache">Mal di testa</label>
+                </div>
+            </div>
+        </section>
+
+        <!-- WELLNESS SECTION -->
+        <section class="section" id="wellnessSection">
+            <h2>✨ Checklist Wellness</h2>
+            
+            <div class="checklist">
+                <div class="checklist-item" id="checkbox-mood">
+                    <input type="checkbox" id="wellness-mood" onchange="updateWellnessChart()">
+                    <label for="wellness-mood">😊 Umore positivo</label>
+                </div>
+                <div class="checklist-item" id="checkbox-energy">
+                    <input type="checkbox" id="wellness-energy" onchange="updateWellnessChart()">
+                    <label for="wellness-energy">⚡ Energia buona</label>
+                </div>
+                <div class="checklist-item" id="checkbox-water">
+                    <input type="checkbox" id="wellness-water" onchange="updateWellnessChart()">
+                    <label for="wellness-water">💧 Acqua (2L+)</label>
+                </div>
+                <div class="checklist-item" id="checkbox-sleep">
+                    <input type="checkbox" id="wellness-sleep" onchange="updateWellnessChart()">
+                    <label for="wellness-sleep">😴 Sonno (7-8h)</label>
+                </div>
+                <div class="checklist-item" id="checkbox-movement">
+                    <input type="checkbox" id="wellness-movement" onchange="updateWellnessChart()">
+                    <label for="wellness-movement">🚶 Movimento</label>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>Grafico Ultimi 30 Giorni</h3>
+                <div class="chart-bars" id="wellnessChart"></div>
+            </div>
+        </section>
+
+        <!-- PROMEMORIA SECTION -->
+        <section class="section" id="reminderSection">
+            <h2>🔔 Promemoria Volanti</h2>
+            
+            <div class="input-group">
+                <input type="text" id="reminderText" placeholder="Scrivi un promemoria..." />
+                <button class="btn" onclick="createReminder()">Imposta</button>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <h3 style="margin-bottom: 15px;">📝 Promemoria Attivi</h3>
+                <div id="remindersList">
+                    <p style="text-align: center; opacity: 0.6;">Nessun promemoria.</p>
+                </div>
+            </div>
+
+            <div id="floatingRemindersContainer"></div>
+        </section>
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchSection('home')">
+            <div>🏠</div>
+            <div class="nav-label">Home</div>
+        </div>
+        <div class="nav-item" onclick="switchSection('shopping')">
+            <div>🛒</div>
+            <div class="nav-label">Spesa</div>
+        </div>
+        <div class="nav-item" onclick="switchSection('food')">
+            <div>🍲</div>
+            <div class="nav-label">Dispensa</div>
+        </div>
+        <div class="nav-item" onclick="switchSection('cycle')">
+            <div>🌸</div>
+            <div class="nav-label">Ciclo</div>
+        </div>
+        <div class="nav-item" onclick="switchSection('wellness')">
+            <div>✨</div>
+            <div class="nav-label">Wellness</div>
+        </div>
+        <div class="nav-item" onclick="switchSection('reminder')">
+            <div>🔔</div>
+            <div class="nav-label">Memo</div>
+        </div>
+    </nav>
+
+    <!-- MODAL PER IMMAGINI CIBO -->
+    <div class="modal" id="foodImageModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeFoodImageModal()">&times;</span>
+            <h3>Aggiungi Foto al Cibo</h3>
+            <div class="image-upload">
+                <input type="file" id="foodImageInput" accept="image/*" />
+            </div>
+            <button class="btn" onclick="saveFoodImage()" style="width: 100%; margin-top: 15px;">Salva Foto</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== DARK MODE =====
+        const darkToggle = document.getElementById('darkToggle');
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+            darkToggle.textContent = '☀️';
+        }
+
+        darkToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isNowDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isNowDark);
+            darkToggle.textContent = isNowDark ? '☀️' : '🌙';
+        });
+
+        // ===== NAVIGATION =====
+        function switchSection(sectionName) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            const sectionMap = {
+                'home': 'homeSection',
+                'shopping': 'shoppingSection',
+                'food': 'foodSection',
+                'cycle': 'cycleSection',
+                'wellness': 'wellnessSection',
+                'reminder': 'reminderSection'
+            };
+
+            document.getElementById(sectionMap[sectionName]).classList.add('active');
+            event.target.closest('.nav-item').classList.add('active');
+
+            if (sectionName === 'wellness') {
+                updateWellnessChart();
+            }
+            if (sectionName === 'cycle') {
+                renderCycleCalendar();
+            }
+            if (sectionName === 'home') {
+                updateDashboard();
+            }
+        }
+
+        // ===== SHOPPING LIST =====
+        function addShoppingItem() {
+            const name = document.getElementById('itemName').value;
+            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+
+            if (!name) {
+                alert('Inserisci il nome dell\'articolo');
+                return;
+            }
+
+            const items = JSON.parse(localStorage.getItem('shoppingItems') || '[]');
+            items.push({ id: Date.now(), name, price, checked: false });
+            localStorage.setItem('shoppingItems', JSON.stringify(items));
+
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemPrice').value = '';
+            renderShoppingList();
+            updateDashboard();
+        }
+
+        function renderShoppingList() {
+            const items = JSON.parse(localStorage.getItem('shoppingItems') || '[]');
+            const container = document.getElementById('shoppingList');
+            let total = 0;
+
+            container.innerHTML = items.map(item => {
+                total += item.price;
+                return `
+                    <div class="list-item">
+                        <div class="list-item-content">
+                            <input type="checkbox" ${item.checked ? 'checked' : ''} 
+                                onchange="toggleShoppingItem(${item.id})">
+                            <span class="list-item-text ${item.checked ? 'checked' : ''}">${item.name}</span>
+                        </div>
+                        <div class="list-item-price">€${item.price.toFixed(2)}</div>
+                        <button class="btn btn-small btn-danger" onclick="deleteShoppingItem(${item.id})">X</button>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('totalSpent').textContent = total.toFixed(2);
+        }
+
+        function toggleShoppingItem(id) {
+            const items = JSON.parse(localStorage.getItem('shoppingItems') || '[]');
+            const item = items.find(i => i.id === id);
+            if (item) {
+                item.checked = !item.checked;
+                localStorage.setItem('shoppingItems', JSON.stringify(items));
+                renderShoppingList();
+            }
+        }
+
+        function deleteShoppingItem(id) {
+            const items = JSON.parse(localStorage.getItem('shoppingItems') || '[]');
+            const filtered = items.filter(i => i.id !== id);
+            localStorage.setItem('shoppingItems', JSON.stringify(filtered));
+            renderShoppingList();
+            updateDashboard();
+        }
+
+        // ===== FOOD DISPENSA =====
+        function addFoodItem() {
+            const name = document.getElementById('foodName').value;
+            const category = document.getElementById('foodCategory').value;
+            const expiry = document.getElementById('foodExpiry').value;
+
+            if (!name || !expiry) {
+                alert('Inserisci nome e data scadenza');
+                return;
+            }
+
+            const items = JSON.parse(localStorage.getItem('foodItems') || '[]');
+            items.push({ 
+                id: Date.now(), 
+                name, 
+                category, 
+                expiry,
+                image: null,
+                addedDate: new Date().toISOString()
+            });
+            localStorage.setItem('foodItems', JSON.stringify(items));
+
+            document.getElementById('foodName').value = '';
+            document.getElementById('foodExpiry').value = '';
+            renderFoodList('all');
+            updateDashboard();
+        }
+
+        function renderFoodList(filter = 'all') {
+            const items = JSON.parse(localStorage.getItem('foodItems') || '[]');
+            const container = document.getElementById('foodList');
+            const now = new Date();
+            const threeDaysLater = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+
+            const filtered = filter === 'all' ? items : items.filter(i => i.category === filter);
+            const sorted = filtered.sort((a, b) => new Date(a.expiry) - new Date(b.expiry));
+
+            container.innerHTML = sorted.map(item => {
+                const expiryDate = new Date(item.expiry);
+                const isExpiring = expiryDate <= threeDaysLater && expiryDate > now;
+                const isExpired = expiryDate < now;
+
+                return `
+                    <div class="food-item">
+                        <div class="food-image" onclick="openFoodImageModal(${item.id})">
+                            ${item.image ? `<img src="${item.image}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">` : '📷'}
+                        </div>
+                        <div class="food-details">
+                            <h3>${item.name}</h3>
+                            <div class="food-category">${item.category}</div>
+                            <div class="food-expiry ${isExpiring || isExpired ? 'expiring-soon' : ''}">
+                                📅 ${isExpired ? '⚠️ SCADUTO' : 'Scadenza: ' + new Date(item.expiry).toLocaleDateString('it-IT')}
+                            </div>
+                        </div>
+                        <button class="btn btn-small btn-danger" onclick="deleteFoodItem(${item.id})">X</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterFood(category) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderFoodList(category);
+        }
+
+        function deleteFoodItem(id) {
+            const items = JSON.parse(localStorage.getItem('foodItems') || '[]');
+            const filtered = items.filter(i => i.id !== id);
+            localStorage.setItem('foodItems', JSON.stringify(filtered));
+            renderFoodList('all');
+            updateDashboard();
+        }
+
+        function openFoodImageModal(id) {
+            document.getElementById('foodImageModal').classList.add('active');
+            document.getElementById('foodImageModal').dataset.itemId = id;
+        }
+
+        function closeFoodImageModal() {
+            document.getElementById('foodImageModal').classList.remove('active');
+        }
+
+        function saveFoodImage() {
+            const file = document.getElementById('foodImageInput').files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const itemId = parseInt(document.getElementById('foodImageModal').dataset.itemId);
+                const items = JSON.parse(localStorage.getItem('foodItems') || '[]');
+                const item = items.find(i => i.id === itemId);
+                if (item) {
+                    item.image = e.target.result;
+                    localStorage.setItem('foodItems', JSON.stringify(items));
+                    renderFoodList('all');
+                    closeFoodImageModal();
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ===== CYCLE TRACKER =====
+        function saveCycleData() {
+            const lastDate = document.getElementById('lastCycleDate').value;
+            if (lastDate) {
+                localStorage.setItem('lastCycleDate', lastDate);
+                renderCycleCalendar();
+                updateDashboard();
+                alert('Dati salvati!');
+            }
+        }
+
+        function saveSymptomsData() {
+            const symptoms = {
+                cramps: document.getElementById('symptom-cramps').checked,
+                fatigue: document.getElementById('symptom-fatigue').checked,
+                mood: document.getElementById('symptom-mood').checked,
+                bloating: document.getElementById('symptom-bloating').checked,
+                headache: document.getElementById('symptom-headache').checked,
+                date: new Date().toDateString()
+            };
+            localStorage.setItem('todaySymptoms', JSON.stringify(symptoms));
+        }
+
+        function renderCycleCalendar() {
+            const lastCycleStr = localStorage.getItem('lastCycleDate');
+            const cycleCalendar = document.getElementById('cycleCalendar');
+            
+            if (!lastCycleStr) {
+                cycleCalendar.innerHTML = '<p style="grid-column: 1/-1; text-align: center; opacity: 0.6;">Imposta il tuo ultimo ciclo per vedere il calendario</p>';
+                return;
+            }
+
+            const lastCycle = new Date(lastCycleStr);
+            const today = new Date();
+            const cycleDays = 28;
+            const menstruationDays = 5;
+            const fertileDays = 8;
+            const ovulationDay = 14;
+
+            const dayOfCycle = Math.floor((today - lastCycle) / (1000 * 60 * 60 * 24)) % cycleDays;
+
+            let html = '';
+            for (let i = 0; i < 28; i++) {
+                let className = 'day-cell';
+                let label = i + 1;
+
+                if (i < menstruationDays) className += ' cycle-day';
+                else if (i >= ovulationDay - 2 && i <= ovulationDay + 2) className += ' ovulation-day';
+                else if (i >= fertileDays && i <= fertileDays + 5) className += ' fertile-day';
+
+                html += `<div class="${className}">${label}</div>`;
+            }
+            cycleCalendar.innerHTML = html;
+
+            updateCycleInfo();
+        }
+
+        function updateCycleInfo() {
+            const lastCycleStr = localStorage.getItem('lastCycleDate');
+            const container = document.getElementById('cycleStats');
+
+            if (!lastCycleStr) {
+                container.innerHTML = '<p>Nessun dato disponibile</p>';
+                return;
+            }
+
+            const lastCycle = new Date(lastCycleStr);
+            const today = new Date();
+            const cycleDays = 28;
+            const dayOfCycle = Math.floor((today - lastCycle) / (1000 * 60 * 60 * 24)) % cycleDays;
+
+            let phase = 'Mestruazione';
+            let emoji = '🔴';
+
+            if (dayOfCycle > 5 && dayOfCycle < 12) {
+                phase = 'Fase follicolare';
+                emoji = '💚';
+            } else if (dayOfCycle >= 12 && dayOfCycle <= 16) {
+                phase = 'Ovulazione';
+                emoji = '⭐';
+            } else if (dayOfCycle > 16 && dayOfCycle < 28) {
+                phase = 'Fase luteale';
+                emoji = '🟡';
+            }
+
+            const nextCycle = new Date(lastCycle.getTime() + cycleDays * 24 * 60 * 60 * 1000);
+
+            container.innerHTML = `
+                <p><strong>${emoji} Fase attuale:</strong> ${phase}</p>
+                <p><strong>📍 Giorno del ciclo:</strong> ${dayOfCycle}</p>
+                <p><strong>📅 Prossimo ciclo:</strong> ${nextCycle.toLocaleDateString('it-IT')}</p>
+            `;
+        }
+
+        // ===== WELLNESS CHECKLIST =====
+        function updateWellnessChart() {
+            const today = new Date().toDateString();
+            const wellness = {
+                mood: document.getElementById('wellness-mood').checked ? 1 : 0,
+                energy: document.getElementById('wellness-energy').checked ? 1 : 0,
+                water: document.getElementById('wellness-water').checked ? 1 : 0,
+                sleep: document.getElementById('wellness-sleep').checked ? 1 : 0,
+                movement: document.getElementById('wellness-movement').checked ? 1 : 0,
+                date: today
+            };
+
+            let history = JSON.parse(localStorage.getItem('wellnessHistory') || '[]');
+            history = history.filter(h => h.date !== today);
+            history.push(wellness);
+            if (history.length > 30) history.shift();
+            localStorage.setItem('wellnessHistory', JSON.stringify(history));
+
+            renderWellnessChart();
+            updateDashboard();
+        }
+
+        function renderWellnessChart() {
+            const history = JSON.parse(localStorage.getItem('wellnessHistory') || '[]');
+            const chart = document.getElementById('wellnessChart');
+
+            if (history.length === 0) {
+                chart.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Nessun dato ancora</p>';
+                return;
+            }
+
+            const maxHeight = 150;
+            chart.innerHTML = history.map((h, idx) => {
+                const score = (h.mood + h.energy + h.water + h.sleep + h.movement) / 5 * 100;
+                const height = (score / 100) * maxHeight;
+                const date = new Date(h.date).getDate();
+                return `
+                    <div class="bar" style="height: ${height}px;">
+                        <div class="bar-label">${date}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadWellnessFromToday() {
+            const today = new Date().toDateString();
+            const history = JSON.parse(localStorage.getItem('wellnessHistory') || '[]');
+            const todayData = history.find(h => h.date === today);
+
+            if (todayData) {
+                document.getElementById('wellness-mood').checked = todayData.mood;
+                document.getElementById('wellness-energy').checked = todayData.energy;
+                document.getElementById('wellness-water').checked = todayData.water;
+                document.getElementById('wellness-sleep').checked = todayData.sleep;
+                document.getElementById('wellness-movement').checked = todayData.movement;
+            }
+        }
+
+        // ===== FLOATING REMINDERS =====
+        function createReminder() {
+            const text = document.getElementById('reminderText').value;
+            if (!text) {
+                alert('Scrivi un promemoria');
+                return;
+            }
+
+            const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+            reminders.push({
+                id: Date.now(),
+                text,
+                createdAt: new Date().toISOString(),
+                shown: false
+            });
+            localStorage.setItem('reminders', JSON.stringify(reminders));
+            document.getElementById('reminderText').value = '';
+            renderRemindersList();
+
+            showReminder(reminders[reminders.length - 1]);
+        }
+
+        function renderRemindersList() {
+            const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+            const list = document.getElementById('remindersList');
+
+            if (reminders.length === 0) {
+                list.innerHTML = '<p style="text-align: center; opacity: 0.6;">Nessun promemoria.</p>';
+                return;
+            }
+
+            list.innerHTML = reminders.map(r => `
+                <div style="background-color: var(--border-light); padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="font-weight: bold;">${r.text}</p>
+                        <small style="opacity: 0.6;">${new Date(r.createdAt).toLocaleString('it-IT')}</small>
+                    </div>
+                    <button class="btn btn-small btn-danger" onclick="deleteReminder(${r.id})">Elimina</button>
+                </div>
+            `).join('');
+        }
+
+        function showReminder(reminder) {
+            const container = document.getElementById('floatingRemindersContainer');
+            const id = `floating-${reminder.id}`;
+
+            const html = `
+                <div class="floating-reminder" id="${id}">
+                    <h4>🔔 Promemoria</h4>
+                    <div class="text">${reminder.text}</div>
+                    <div class="reminder-actions">
+                        <button class="btn btn-warning btn-small" onclick="snoozeReminder(${reminder.id}, '5min')">Ricordami fra 5min</button>
+                        <button class="btn btn-warning btn-small" onclick="snoozeReminder(${reminder.id}, '1h')">Ricordami fra 1h</button>
+                        <button class="btn btn-success btn-small" onclick="dismissReminder(${reminder.id}, false)">✓ Fatto</button>
+                        <button class="btn btn-success btn-small" onclick="dismissReminder(${reminder.id}, true)">✓ Fatto + Riorganizza</button>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', html);
+
+            setTimeout(() => {
+                const element = document.getElementById(id);
+                if (element) element.remove();
+            }, 30000);
+        }
+
+        function snoozeReminder(id, duration) {
+            const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+            const reminder = reminders.find(r => r.id === id);
+
+            if (reminder) {
+                const minutes = duration === '5min' ? 5 : 60;
+                setTimeout(() => {
+                    showReminder(reminder);
+                    if (Notification.permission === 'granted') {
+                        new Notification('Promemoria: ' + reminder.text);
+                    }
+                }, minutes * 60 * 1000);
+
+                document.getElementById(`floating-${id}`).remove();
+            }
+        }
+
+        function dismissReminder(id, reorganize) {
+            const element = document.getElementById(`floating-${id}`);
+            if (element) element.remove();
+
+            if (reorganize) {
+                const newText = prompt('Nuova data/ora:');
+                if (newText) {
+                    createReminder();
+                    document.getElementById('reminderText').value = newText;
+                }
+            } else {
+                deleteReminder(id);
+            }
+        }
+
+        function deleteReminder(id) {
+            const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+            const filtered = reminders.filter(r => r.id !== id);
+            localStorage.setItem('reminders', JSON.stringify(filtered));
+            renderRemindersList();
+            const element = document.getElementById(`floating-${id}`);
+            if (element) element.remove();
+        }
+
+        // ===== DASHBOARD =====
+        function updateDashboard() {
+            const shopping = JSON.parse(localStorage.getItem('shoppingItems') || '[]');
+            const food = JSON.parse(localStorage.getItem('foodItems') || '[]');
+            const lastCycle = localStorage.getItem('lastCycleDate');
+
+            const now = new Date();
+            const threeDaysLater = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+            const foodExpiring = food.filter(f => {
+                const expiry = new Date(f.expiry);
+                return expiry <= threeDaysLater && expiry > now;
+            }).length;
+
+            const totalSpent = shopping.reduce((sum, item) => sum + item.price, 0);
+
+            document.getElementById('shoppingCount').textContent = shopping.length;
+            document.getElementById('shoppingBudget').textContent = `€${totalSpent.toFixed(2)}`;
+            document.getElementById('foodCount').textContent = food.length;
+            document.getElementById('foodExpiring').textContent = foodExpiring > 0 ? `⚠️ ${foodExpiring} scadono` : '✓ OK';
+
+            const history = JSON.parse(localStorage.getItem('wellnessHistory') || '[]');
+            const today = new Date().toDateString();
+            const todayWellness = history.find(h => h.date === today);
+            if (todayWellness) {
+                const percentage = Math.round(((todayWellness.mood + todayWellness.energy + todayWellness.water + todayWellness.sleep + todayWellness.movement) / 5) * 100);
+                document.getElementById('wellnessCount').textContent = percentage + '%';
+            }
+
+            if (lastCycle) {
+                const lastCycleDate = new Date(lastCycle);
+                const dayOfCycle = Math.floor((now - lastCycleDate) / (1000 * 60 * 60 * 24)) % 28;
+                const phaseEmoji = dayOfCycle < 5 ? '🔴' : dayOfCycle < 12 ? '💚' : dayOfCycle <= 16 ? '⭐' : '🟡';
+                document.getElementById('cyclePhase').textContent = phaseEmoji;
+                document.getElementById('cycleInfo').textContent = `Giorno ${dayOfCycle}`;
+            }
+        }
+
+        // ===== INIT =====
+        renderShoppingList();
+        renderFoodList('all');
+        loadWellnessFromToday();
+        renderWellnessChart();
+        renderRemindersList();
+        updateDashboard();
+
+        // ===== REQUEST NOTIFICATION PERMISSION =====
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+        // ===== SERVICE WORKER =====
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:application/javascript,' + encodeURIComponent(`
+                self.addEventListener('install', e => self.skipWaiting());
+                self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+            `)).catch(() => {});
+        }
+
+        // ===== PWA MANIFEST =====
+        const manifest = {
+            name: 'Daily Organizer Hub',
+            short_name: 'Organizer',
+            start_url: '/',
+            display: 'standalone',
+            background_color: '#F5DEB3',
+            theme_color: '#FF8C42',
+            icons: [
+                { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect fill="%23FF8C42" width="192" height="192"/><text x="96" y="140" font-size="120" fill="white" text-anchor="middle">🌻</text></svg>', sizes: '192x192', type: 'image/svg+xml' }
+            ]
+        };
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = 'data:application/json,' + encodeURIComponent(JSON.stringify(manifest));
+        document.head.appendChild(link);
+    </script>
+</body>
+</html>
