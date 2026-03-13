@@ -403,26 +403,7 @@
             color: white;
         }
 
-        .symptoms-list {
-            margin-top: 20px;
-        }
 
-        .symptom-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px;
-            margin-bottom: 8px;
-            background-color: rgba(255, 140, 66, 0.1);
-            border-radius: 6px;
-        }
-
-        .symptom-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: var(--arancio);
-        }
 
         /* ===== WELLNESS SECTION ===== */
         .checklist {
@@ -700,10 +681,35 @@
             margin: 20px 0;
         }
 
-        .image-upload input[type="file"] {
-            display: block;
-            margin-top: 10px;
-            width: 100%;
+        .dispensa-subsection {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: var(--bg-light);
+            border-radius: 12px;
+            border: 2px solid var(--border-light);
+        }
+
+        body.dark-mode .dispensa-subsection {
+            background-color: #2a2a28;
+            border-color: var(--border-dark);
+        }
+
+        .dispensa-subsection h3 {
+            margin-bottom: 10px;
+            color: var(--arancio);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .add-btn {
+            background-color: var(--verde-oliva) !important;
+            float: right;
+            margin-top: -5px;
+        }
+
+        .add-btn:hover {
+            background-color: var(--terra) !important;
         }
     </style>
 </head>
@@ -753,44 +759,38 @@
 
         <!-- DISPENSA SECTION -->
         <section class="section" id="foodSection">
-            <h2>🍲 Dispensa & Spesa</h2>
-            <div class="dispensa-header">
-                <button class="filter-btn active" onclick="setDispensaTab('Frigo')">🧊 Frigo</button>
-                <button class="filter-btn" onclick="setDispensaTab('Freezer')">❄️ Freezer</button>
-                <button class="filter-btn" onclick="setDispensaTab('Dispensa')">📦 Dispensa</button>
-                <button class="filter-btn" onclick="setDispensaTab('Spesa')">🛒 Spesa</button>
+            <h2>🍲 Dispensa</h2>
+            
+            <!-- FRIGO -->
+            <div class="dispensa-subsection">
+                <h3>🧊 Frigo</h3>
+                <button class="btn btn-small add-btn" onclick="showAddModal('Frigo')">+</button>
+                <div class="list-container" id="frigoList"></div>
             </div>
-            <div class="input-group" id="dispensaInputGroup">
-                <!-- dinamico -->
+            
+            <!-- FREEZER -->
+            <div class="dispensa-subsection">
+                <h3>❄️ Freezer</h3>
+                <button class="btn btn-small add-btn" onclick="showAddModal('Freezer')">+</button>
+                <div class="list-container" id="freezerList"></div>
             </div>
-            <div class="list-container" id="dispensaList"></div>
+            
+            <!-- DISPENSA -->
+            <div class="dispensa-subsection">
+                <h3>📦 Dispensa</h3>
+                <button class="btn btn-small add-btn" onclick="showAddModal('Dispensa')">+</button>
+                <div class="list-container" id="dispensaList"></div>
+            </div>
+            
+            <!-- LISTA SPESA -->
+            <div class="dispensa-subsection">
+                <h3>🛒 Lista Spesa</h3>
+                <button class="btn btn-small add-btn" onclick="showAddModal('Spesa')">+</button>
+                <div class="list-container" id="spesaList"></div>
+            </div>
         </section>
 
-        <!-- CICLO SECTION -->
-        <!-- rimosso, integrato in wellness -->
-                <h3 style="margin-bottom: 10px;">Sintomi Oggi</h3>
-                <div class="symptom-item">
-                    <input type="checkbox" id="symptom-cramps" onchange="saveSymptomsData()">
-                    <label for="symptom-cramps">Crampi</label>
-                </div>
-                <div class="symptom-item">
-                    <input type="checkbox" id="symptom-fatigue" onchange="saveSymptomsData()">
-                    <label for="symptom-fatigue">Affaticamento</label>
-                </div>
-                <div class="symptom-item">
-                    <input type="checkbox" id="symptom-mood" onchange="saveSymptomsData()">
-                    <label for="symptom-mood">Sbalzi d'umore</label>
-                </div>
-                <div class="symptom-item">
-                    <input type="checkbox" id="symptom-bloating" onchange="saveSymptomsData()">
-                    <label for="symptom-bloating">Gonfiore</label>
-                </div>
-                <div class="symptom-item">
-                    <input type="checkbox" id="symptom-headache" onchange="saveSymptomsData()">
-                    <label for="symptom-headache">Mal di testa</label>
-                </div>
-            </div>
-        </section>
+
 
         <!-- WELLNESS SECTION -->
         <section class="section" id="wellnessSection">
@@ -847,15 +847,14 @@
     </nav>
     </nav>
 
-    <!-- MODAL PER IMMAGINI CIBO -->
-    <div class="modal" id="foodImageModal">
+    <!-- MODAL PER AGGIUNGERE ELEMENTI -->
+    <div class="modal" id="addItemModal">
         <div class="modal-content">
-            <span class="modal-close" onclick="closeFoodImageModal()">&times;</span>
-            <h3>Aggiungi Foto al Cibo</h3>
-            <div class="image-upload">
-                <input type="file" id="foodImageInput" accept="image/*" />
+            <span class="modal-close" onclick="closeAddModal()">&times;</span>
+            <h3 id="modalTitle">Aggiungi Elemento</h3>
+            <div id="modalContent">
+                <!-- contenuto dinamico -->
             </div>
-            <button class="btn" onclick="saveFoodImage()" style="width: 100%; margin-top: 15px;">Salva Foto</button>
         </div>
     </div>
 
@@ -1071,32 +1070,131 @@
             }).join('');
         }
 
-        function setDispensaTab(tab) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+        // ===== DISPENSA FUNCTIONS =====
+        function showAddModal(type) {
+            const modal = document.getElementById('addItemModal');
+            const title = document.getElementById('modalTitle');
+            const content = document.getElementById('modalContent');
             
-            const inputGroup = document.getElementById('dispensaInputGroup');
-            if (tab === 'Spesa') {
-                inputGroup.innerHTML = `
-                    <input type="text" id="shoppingItemName" placeholder="Nome articolo..." />
-                    <select id="shoppingItemCategory" style="padding: 12px; border: 2px solid var(--border-light); border-radius: 8px;">
+            modal.dataset.itemType = type;
+            title.textContent = `Aggiungi a ${type}`;
+            
+            if (type === 'Spesa') {
+                content.innerHTML = `
+                    <input type="text" id="newItemName" placeholder="Nome articolo..." style="width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid var(--border-light); border-radius: 8px;" />
+                    <select id="newItemCategory" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid var(--border-light); border-radius: 8px;">
                         <option value="Panificati">Panificati</option>
                         <option value="Verdura">Verdura</option>
                         <option value="Carne">Carne</option>
                         <option value="Pesce">Pesce</option>
                         <option value="Altro">Altro</option>
                     </select>
-                    <button class="btn" onclick="addShoppingItem()">Aggiungi</button>
+                    <button class="btn" onclick="addNewItem()" style="width: 100%;">Aggiungi</button>
                 `;
-                renderShoppingList();
             } else {
-                inputGroup.innerHTML = `
-                    <input type="text" id="foodName" placeholder="Nome cibo..." />
-                    <input type="date" id="foodExpiry" />
-                    <button class="btn" onclick="addFoodItem()">Aggiungi</button>
+                content.innerHTML = `
+                    <input type="text" id="newItemName" placeholder="Nome cibo..." style="width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid var(--border-light); border-radius: 8px;" />
+                    <input type="date" id="newItemExpiry" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid var(--border-light); border-radius: 8px;" />
+                    <button class="btn" onclick="addNewItem()" style="width: 100%;">Aggiungi</button>
                 `;
-                renderFoodList(tab);
             }
+            
+            modal.classList.add('active');
+        }
+
+        function closeAddModal() {
+            document.getElementById('addItemModal').classList.remove('active');
+        }
+
+        function addNewItem() {
+            const modal = document.getElementById('addItemModal');
+            const type = modal.dataset.itemType;
+            const name = document.getElementById('newItemName').value;
+            
+            if (!name) {
+                alert('Inserisci il nome');
+                return;
+            }
+            
+            if (type === 'Spesa') {
+                const category = document.getElementById('newItemCategory').value;
+                const items = JSON.parse(localStorage.getItem('shoppingItems') || '[]');
+                items.push({ id: Date.now(), name, category, checked: false });
+                localStorage.setItem('shoppingItems', JSON.stringify(items));
+                renderSpesaList();
+            } else {
+                const expiry = document.getElementById('newItemExpiry').value;
+                if (!expiry) {
+                    alert('Inserisci la data di scadenza');
+                    return;
+                }
+                const items = JSON.parse(localStorage.getItem('foodItems') || '[]');
+                items.push({ 
+                    id: Date.now(), 
+                    name, 
+                    category: type, 
+                    expiry,
+                    image: null,
+                    addedDate: new Date().toISOString()
+                });
+                localStorage.setItem('foodItems', JSON.stringify(items));
+                renderFoodList(type.toLowerCase());
+            }
+            
+            closeAddModal();
+            updateHome();
+        }
+
+        function renderFoodList(type) {
+            const items = JSON.parse(localStorage.getItem('foodItems') || '[]');
+            const containerId = type + 'List';
+            const container = document.getElementById(containerId);
+            
+            if (!container) return;
+            
+            const filtered = items.filter(i => i.category.toLowerCase() === type.toLowerCase());
+            const sorted = filtered.sort((a, b) => new Date(a.expiry) - new Date(b.expiry));
+            
+            container.innerHTML = sorted.map(item => {
+                const expiryDate = new Date(item.expiry);
+                const now = new Date();
+                const isExpiring = expiryDate <= new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000) && expiryDate > now;
+                const isExpired = expiryDate < now;
+
+                return `
+                    <div class="food-item">
+                        <div class="food-image" onclick="openFoodImageModal(${item.id})">
+                            ${item.image ? `<img src="${item.image}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">` : '📷'}
+                        </div>
+                        <div class="food-details">
+                            <h3>${item.name}</h3>
+                            <div class="food-expiry ${isExpiring || isExpired ? 'expiring-soon' : ''}">
+                                📅 ${isExpired ? '⚠️ SCADUTO' : 'Scadenza: ' + new Date(item.expiry).toLocaleDateString('it-IT')}
+                            </div>
+                        </div>
+                        <button class="btn btn-small btn-danger" onclick="deleteFoodItem(${item.id})">X</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderSpesaList() {
+            const items = JSON.parse(localStorage.getItem('shoppingItems') || '[]');
+            const container = document.getElementById('spesaList');
+            
+            container.innerHTML = items.map(item => {
+                return `
+                    <div class="list-item">
+                        <div class="list-item-content">
+                            <input type="checkbox" ${item.checked ? 'checked' : ''} 
+                                onchange="toggleShoppingItem(${item.id})">
+                            <span class="list-item-text ${item.checked ? 'checked' : ''}">${item.name}</span>
+                            <span class="food-category" style="margin-left: 10px;">${item.category}</span>
+                        </div>
+                        <button class="btn btn-small btn-danger" onclick="deleteShoppingItem(${item.id})">X</button>
+                    </div>
+                `;
+            }).join('');
         }
 
         function deleteFoodItem(id) {
@@ -1146,17 +1244,7 @@
             }
         }
 
-        function saveSymptomsData() {
-            const symptoms = {
-                cramps: document.getElementById('symptom-cramps').checked,
-                fatigue: document.getElementById('symptom-fatigue').checked,
-                mood: document.getElementById('symptom-mood').checked,
-                bloating: document.getElementById('symptom-bloating').checked,
-                headache: document.getElementById('symptom-headache').checked,
-                date: new Date().toDateString()
-            };
-            localStorage.setItem('todaySymptoms', JSON.stringify(symptoms));
-        }
+
 
         function renderCycleCalendar() {
             const lastCycleStr = localStorage.getItem('lastCycleDate');
@@ -1552,7 +1640,10 @@
         }
 
         // ===== INIT =====
-        setDispensaTab('Frigo');
+        renderFoodList('frigo');
+        renderFoodList('freezer');
+        renderFoodList('dispensa');
+        renderSpesaList();
         renderWellnessCalendar();
         renderRemindersList();
         renderMenuList();
