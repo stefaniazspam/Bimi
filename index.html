@@ -717,15 +717,19 @@
         <!-- HOME SECTION -->
         <section class="section active" id="homeSection">
             <h2>Dashboard Giornaliero</h2>
-            <div class="input-group">
-                <button class="btn btn-small" id="toiletBtn" onclick="toggleToilet()">🚽 Toilette</button>
-                <button class="btn btn-small" id="cycleBtn" onclick="toggleCycle()">Inizio ciclo</button>
+            <div class="checklist">
+                <div class="checklist-item">
+                    <input type="checkbox" id="home-toilet" onchange="toggleToilet()">
+                    <label for="home-toilet">🚽 Toilette</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="home-cycle" onchange="toggleCycle()">
+                    <label for="home-cycle">🌸 Inizio ciclo</label>
+                </div>
             </div>
             <div id="todayMenu" style="margin-top:20px;"></div>
-            <div id="homeExtras" style="margin-top:20px;">
-                <div id="expiringInfo"></div>
-                <div id="todayNotifications"></div>
-            </div>
+            <div id="expiringFoods" style="margin-top:20px;"></div>
+            <div id="todayReminders" style="margin-top:20px;"></div>
         </section>
 
         <!-- MENU SECTION -->
@@ -824,17 +828,13 @@
             <div>🏠</div>
             <div class="nav-label">Home</div>
         </div>
-        <div class="nav-item" onclick="switchSection('shopping')">
-            <div>🛒</div>
-            <div class="nav-label">Spesa</div>
+        <div class="nav-item" onclick="switchSection('menu')">
+            <div>📅</div>
+            <div class="nav-label">Menu</div>
         </div>
         <div class="nav-item" onclick="switchSection('food')">
             <div>🍲</div>
             <div class="nav-label">Dispensa</div>
-        </div>
-        <div class="nav-item" onclick="switchSection('cycle')">
-            <div>🌸</div>
-            <div class="nav-label">Ciclo</div>
         </div>
         <div class="nav-item" onclick="switchSection('wellness')">
             <div>✨</div>
@@ -844,6 +844,7 @@
             <div>🔔</div>
             <div class="nav-label">Memo</div>
         </div>
+    </nav>
     </nav>
 
     <!-- MODAL PER IMMAGINI CIBO -->
@@ -881,9 +882,8 @@
 
             const sectionMap = {
                 'home': 'homeSection',
-                'shopping': 'shoppingSection',
+                'menu': 'menuSection',
                 'food': 'foodSection',
-                'cycle': 'cycleSection',
                 'wellness': 'wellnessSection',
                 'reminder': 'reminderSection'
             };
@@ -892,20 +892,73 @@
             event.target.closest('.nav-item').classList.add('active');
 
             if (sectionName === 'wellness') {
-                updateWellnessChart();
-            }
-            if (sectionName === 'cycle') {
-                renderCycleCalendar();
+                renderWellnessCalendar();
             }
             if (sectionName === 'home') {
                 updateDashboard();
             }
+            if (sectionName === 'menu') {
+                renderMenuList();
+            }
+        }
+
+        // ===== MENU FUNCTIONS =====
+        function addMenuItem() {
+            const text = document.getElementById('menuItemText').value;
+            const day = document.getElementById('menuItemDay').value;
+
+            if (!text) {
+                alert('Inserisci il pasto');
+                return;
+            }
+
+            const items = JSON.parse(localStorage.getItem('menuItems') || '[]');
+            items.push({ id: Date.now(), text, day });
+            localStorage.setItem('menuItems', JSON.stringify(items));
+
+            document.getElementById('menuItemText').value = '';
+            renderMenuList();
+            updateHome();
+        }
+
+        function renderMenuList() {
+            const items = JSON.parse(localStorage.getItem('menuItems') || '[]');
+            const container = document.getElementById('menuList');
+            const days = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
+
+            container.innerHTML = days.map(day => {
+                const dayItems = items.filter(item => item.day === day);
+                return `
+                    <div style="margin-bottom: 20px;">
+                        <h3>${day}</h3>
+                        ${dayItems.length > 0 ? 
+                            dayItems.map(item => `
+                                <div class="list-item">
+                                    <div class="list-item-content">
+                                        <span class="list-item-text">${item.text}</span>
+                                    </div>
+                                    <button class="btn btn-small btn-danger" onclick="deleteMenuItem(${item.id})">X</button>
+                                </div>
+                            `).join('') : 
+                            '<p style="opacity: 0.6; padding: 10px;">Nessun pasto programmato</p>'
+                        }
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteMenuItem(id) {
+            const items = JSON.parse(localStorage.getItem('menuItems') || '[]');
+            const filtered = items.filter(i => i.id !== id);
+            localStorage.setItem('menuItems', JSON.stringify(filtered));
+            renderMenuList();
+            updateHome();
         }
 
         // ===== SHOPPING LIST =====
         function addShoppingItem() {
-            const name = document.getElementById('itemName').value;
-            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+            const name = document.getElementById('shoppingItemName').value;
+            const category = document.getElementById('shoppingItemCategory').value;
 
             if (!name) {
                 alert('Inserisci il nome dell\'articolo');
@@ -913,36 +966,31 @@
             }
 
             const items = JSON.parse(localStorage.getItem('shoppingItems') || '[]');
-            items.push({ id: Date.now(), name, price, checked: false });
+            items.push({ id: Date.now(), name, category, checked: false });
             localStorage.setItem('shoppingItems', JSON.stringify(items));
 
-            document.getElementById('itemName').value = '';
-            document.getElementById('itemPrice').value = '';
+            document.getElementById('shoppingItemName').value = '';
             renderShoppingList();
             updateDashboard();
         }
 
         function renderShoppingList() {
             const items = JSON.parse(localStorage.getItem('shoppingItems') || '[]');
-            const container = document.getElementById('shoppingList');
-            let total = 0;
+            const container = document.getElementById('dispensaList');
 
             container.innerHTML = items.map(item => {
-                total += item.price;
                 return `
                     <div class="list-item">
                         <div class="list-item-content">
                             <input type="checkbox" ${item.checked ? 'checked' : ''} 
                                 onchange="toggleShoppingItem(${item.id})">
                             <span class="list-item-text ${item.checked ? 'checked' : ''}">${item.name}</span>
+                            <span class="food-category" style="margin-left: 10px;">${item.category}</span>
                         </div>
-                        <div class="list-item-price">€${item.price.toFixed(2)}</div>
                         <button class="btn btn-small btn-danger" onclick="deleteShoppingItem(${item.id})">X</button>
                     </div>
                 `;
             }).join('');
-
-            document.getElementById('totalSpent').textContent = total.toFixed(2);
         }
 
         function toggleShoppingItem(id) {
@@ -991,9 +1039,9 @@
             updateDashboard();
         }
 
-        function renderFoodList(filter = 'all') {
+        function renderFoodList(filter = 'Frigo') {
             const items = JSON.parse(localStorage.getItem('foodItems') || '[]');
-            const container = document.getElementById('foodList');
+            const container = document.getElementById('dispensaList');
             const now = new Date();
             const threeDaysLater = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
 
@@ -1023,10 +1071,32 @@
             }).join('');
         }
 
-        function filterFood(category) {
+        function setDispensaTab(tab) {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
-            renderFoodList(category);
+            
+            const inputGroup = document.getElementById('dispensaInputGroup');
+            if (tab === 'Spesa') {
+                inputGroup.innerHTML = `
+                    <input type="text" id="shoppingItemName" placeholder="Nome articolo..." />
+                    <select id="shoppingItemCategory" style="padding: 12px; border: 2px solid var(--border-light); border-radius: 8px;">
+                        <option value="Panificati">Panificati</option>
+                        <option value="Verdura">Verdura</option>
+                        <option value="Carne">Carne</option>
+                        <option value="Pesce">Pesce</option>
+                        <option value="Altro">Altro</option>
+                    </select>
+                    <button class="btn" onclick="addShoppingItem()">Aggiungi</button>
+                `;
+                renderShoppingList();
+            } else {
+                inputGroup.innerHTML = `
+                    <input type="text" id="foodName" placeholder="Nome cibo..." />
+                    <input type="date" id="foodExpiry" />
+                    <button class="btn" onclick="addFoodItem()">Aggiungi</button>
+                `;
+                renderFoodList(tab);
+            }
         }
 
         function deleteFoodItem(id) {
@@ -1159,7 +1229,75 @@
             `;
         }
 
-        // ===== WELLNESS CHECKLIST =====
+        // ===== WELLNESS FUNCTIONS =====
+        function recordEvent(type) {
+            const today = new Date().toDateString();
+            let dailyData = JSON.parse(localStorage.getItem('dailyData') || '{}');
+            if (!dailyData[today]) dailyData[today] = {};
+            
+            if (type === 'toilette') {
+                dailyData[today].toilette = true;
+            } else if (type === 'rapport') {
+                dailyData[today].rapport = true;
+            }
+            
+            localStorage.setItem('dailyData', JSON.stringify(dailyData));
+            renderWellnessCalendar();
+        }
+
+        function renderWellnessCalendar() {
+            const calendar = document.getElementById('wellnessCalendar');
+            const dailyData = JSON.parse(localStorage.getItem('dailyData') || '{}');
+            const lastCycle = localStorage.getItem('lastCycleDate');
+            
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            let html = '';
+            let currentDate = new Date(startDate);
+            
+            for (let week = 0; week < 6; week++) {
+                for (let day = 0; day < 7; day++) {
+                    const dateStr = currentDate.toDateString();
+                    const dayNumber = currentDate.getDate();
+                    const isCurrentMonth = currentDate.getMonth() === currentMonth;
+                    
+                    let className = 'day-cell';
+                    let content = isCurrentMonth ? dayNumber : '';
+                    
+                    // Controlla eventi
+                    if (dailyData[dateStr]) {
+                        if (dailyData[dateStr].toilette) {
+                            content += ' 🟢';
+                        }
+                        if (dailyData[dateStr].rapport) {
+                            content += ' 💛';
+                        }
+                    }
+                    
+                    // Controlla ciclo mestruale
+                    if (lastCycle) {
+                        const cycleStart = new Date(lastCycle);
+                        const daysSinceCycle = Math.floor((currentDate - cycleStart) / (1000 * 60 * 60 * 24));
+                        if (daysSinceCycle >= 0 && daysSinceCycle < 5 && daysSinceCycle % 28 < 5) {
+                            content += ' 🔴';
+                        }
+                    }
+                    
+                    html += `<div class="${className}">${content}</div>`;
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            }
+            
+            calendar.innerHTML = html;
+        }
+
         function updateWellnessChart() {
             const today = new Date().toDateString();
             const wellness = {
@@ -1325,11 +1463,83 @@
             if (element) element.remove();
         }
 
+        // ===== HOME FUNCTIONS =====
+        function toggleToilet() {
+            const today = new Date().toDateString();
+            let dailyData = JSON.parse(localStorage.getItem('dailyData') || '{}');
+            if (!dailyData[today]) dailyData[today] = {};
+            dailyData[today].toilette = document.getElementById('home-toilet').checked;
+            localStorage.setItem('dailyData', JSON.stringify(dailyData));
+        }
+
+        function toggleCycle() {
+            const today = new Date().toDateString();
+            let dailyData = JSON.parse(localStorage.getItem('dailyData') || '{}');
+            if (!dailyData[today]) dailyData[today] = {};
+            dailyData[today].cycleStart = document.getElementById('home-cycle').checked;
+            if (dailyData[today].cycleStart) {
+                localStorage.setItem('lastCycleDate', new Date().toISOString().split('T')[0]);
+            }
+            localStorage.setItem('dailyData', JSON.stringify(dailyData));
+        }
+
+        function updateHome() {
+            const today = new Date();
+            const todayStr = today.toDateString();
+            const dayName = today.toLocaleDateString('it-IT', { weekday: 'long' });
+
+            // Carica dati giornalieri
+            const dailyData = JSON.parse(localStorage.getItem('dailyData') || '{}');
+            if (dailyData[todayStr]) {
+                document.getElementById('home-toilet').checked = dailyData[todayStr].toilette || false;
+                document.getElementById('home-cycle').checked = dailyData[todayStr].cycleStart || false;
+            }
+
+            // Menù del giorno
+            const menuItems = JSON.parse(localStorage.getItem('menuItems') || '[]');
+            const todayMenu = menuItems.filter(item => item.day === dayName);
+            const menuDiv = document.getElementById('todayMenu');
+            if (todayMenu.length > 0) {
+                menuDiv.innerHTML = '<h3>🍽️ Menù di oggi:</h3>' + todayMenu.map(item => `<p>${item.text}</p>`).join('');
+            } else {
+                menuDiv.innerHTML = '<p style="opacity:0.6;">Nessun menù impostato per oggi</p>';
+            }
+
+            // Alimenti in scadenza entro 3gg
+            const food = JSON.parse(localStorage.getItem('foodItems') || '[]');
+            const now = new Date();
+            const threeDaysLater = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+            const expiringFoods = food.filter(f => {
+                const expiry = new Date(f.expiry);
+                return expiry <= threeDaysLater && expiry > now;
+            });
+            const expiringDiv = document.getElementById('expiringFoods');
+            if (expiringFoods.length > 0) {
+                expiringDiv.innerHTML = '<h3>⚠️ Alimenti in scadenza:</h3>' + 
+                    expiringFoods.map(f => `<p>${f.name} - Scade: ${new Date(f.expiry).toLocaleDateString('it-IT')}</p>`).join('');
+            } else {
+                expiringDiv.innerHTML = '<p style="opacity:0.6;">Nessun alimento in scadenza</p>';
+            }
+
+            // Promemoria del giorno
+            const reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+            const todayReminders = reminders.filter(r => {
+                const reminderDate = new Date(r.createdAt).toDateString();
+                return reminderDate === todayStr;
+            });
+            const remindersDiv = document.getElementById('todayReminders');
+            if (todayReminders.length > 0) {
+                remindersDiv.innerHTML = '<h3>🔔 Promemoria oggi:</h3>' + 
+                    todayReminders.map(r => `<p>${r.text}</p>`).join('');
+            } else {
+                remindersDiv.innerHTML = '<p style="opacity:0.6;">Nessun promemoria per oggi</p>';
+            }
+        }
+
         // ===== DASHBOARD =====
         function updateDashboard() {
             const shopping = JSON.parse(localStorage.getItem('shoppingItems') || '[]');
             const food = JSON.parse(localStorage.getItem('foodItems') || '[]');
-            const lastCycle = localStorage.getItem('lastCycleDate');
 
             const now = new Date();
             const threeDaysLater = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
@@ -1338,37 +1548,16 @@
                 return expiry <= threeDaysLater && expiry > now;
             }).length;
 
-            const totalSpent = shopping.reduce((sum, item) => sum + item.price, 0);
-
-            document.getElementById('shoppingCount').textContent = shopping.length;
-            document.getElementById('shoppingBudget').textContent = `€${totalSpent.toFixed(2)}`;
-            document.getElementById('foodCount').textContent = food.length;
-            document.getElementById('foodExpiring').textContent = foodExpiring > 0 ? `⚠️ ${foodExpiring} scadono` : '✓ OK';
-
-            const history = JSON.parse(localStorage.getItem('wellnessHistory') || '[]');
-            const today = new Date().toDateString();
-            const todayWellness = history.find(h => h.date === today);
-            if (todayWellness) {
-                const percentage = Math.round(((todayWellness.mood + todayWellness.energy + todayWellness.water + todayWellness.sleep + todayWellness.movement) / 5) * 100);
-                document.getElementById('wellnessCount').textContent = percentage + '%';
-            }
-
-            if (lastCycle) {
-                const lastCycleDate = new Date(lastCycle);
-                const dayOfCycle = Math.floor((now - lastCycleDate) / (1000 * 60 * 60 * 24)) % 28;
-                const phaseEmoji = dayOfCycle < 5 ? '🔴' : dayOfCycle < 12 ? '💚' : dayOfCycle <= 16 ? '⭐' : '🟡';
-                document.getElementById('cyclePhase').textContent = phaseEmoji;
-                document.getElementById('cycleInfo').textContent = `Giorno ${dayOfCycle}`;
-            }
+            updateHome();
         }
 
         // ===== INIT =====
-        renderShoppingList();
-        renderFoodList('all');
-        loadWellnessFromToday();
-        renderWellnessChart();
+        setDispensaTab('Frigo');
+        renderWellnessCalendar();
         renderRemindersList();
+        renderMenuList();
         updateDashboard();
+        updateHome();
 
         // ===== REQUEST NOTIFICATION PERMISSION =====
         if ('Notification' in window && Notification.permission === 'default') {
