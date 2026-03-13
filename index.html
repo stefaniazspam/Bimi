@@ -717,87 +717,53 @@
         <!-- HOME SECTION -->
         <section class="section active" id="homeSection">
             <h2>Dashboard Giornaliero</h2>
-            <div class="dashboard">
-                <div class="card-overview">
-                    <h3>🛒 Spesa</h3>
-                    <div class="value" id="shoppingCount">0</div>
-                    <small id="shoppingBudget">€0.00</small>
-                </div>
-                <div class="card-overview">
-                    <h3>🍲 Dispensa</h3>
-                    <div class="value" id="foodCount">0</div>
-                    <small id="foodExpiring">In scadenza</small>
-                </div>
-                <div class="card-overview">
-                    <h3>✨ Wellness</h3>
-                    <div class="value" id="wellnessCount">0%</div>
-                    <small>Oggi</small>
-                </div>
-                <div class="card-overview">
-                    <h3>🌸 Ciclo</h3>
-                    <div class="value" id="cyclePhase">—</div>
-                    <small id="cycleInfo">N/A</small>
-                </div>
+            <div class="input-group">
+                <button class="btn btn-small" id="toiletBtn" onclick="toggleToilet()">🚽 Toilette</button>
+                <button class="btn btn-small" id="cycleBtn" onclick="toggleCycle()">Inizio ciclo</button>
+            </div>
+            <div id="todayMenu" style="margin-top:20px;"></div>
+            <div id="homeExtras" style="margin-top:20px;">
+                <div id="expiringInfo"></div>
+                <div id="todayNotifications"></div>
             </div>
         </section>
 
-        <!-- SPESA SECTION -->
-        <section class="section" id="shoppingSection">
-            <h2>🛒 Lista Spesa</h2>
+        <!-- MENU SECTION -->
+        <section class="section" id="menuSection">
+            <h2>📅 Menù Settimanale</h2>
             <div class="input-group">
-                <input type="text" id="itemName" placeholder="Nome articolo..." />
-                <input type="number" id="itemPrice" placeholder="€ Prezzo" min="0" step="0.01" />
-                <button class="btn" onclick="addShoppingItem()">Aggiungi</button>
+                <input type="text" id="menuItemText" placeholder="Pasto..." />
+                <select id="menuItemDay" style="padding: 12px; border: 2px solid var(--border-light); border-radius: 8px;">
+                    <option value="Lunedì">Lunedì</option>
+                    <option value="Martedì">Martedì</option>
+                    <option value="Mercoledì">Mercoledì</option>
+                    <option value="Giovedì">Giovedì</option>
+                    <option value="Venerdì">Venerdì</option>
+                    <option value="Sabato">Sabato</option>
+                    <option value="Domenica">Domenica</option>
+                </select>
+                <button class="btn" onclick="addMenuItem()">Aggiungi</button>
             </div>
-            <div class="list-container" id="shoppingList"></div>
-            <div class="total-budget">
-                Totale: € <span id="totalSpent">0.00</span>
-            </div>
+            <div id="menuList" class="list-container"></div>
         </section>
 
         <!-- DISPENSA SECTION -->
         <section class="section" id="foodSection">
-            <h2>🍲 Dispensa</h2>
-            <div class="input-group">
-                <input type="text" id="foodName" placeholder="Nome cibo..." />
-                <select id="foodCategory" style="padding: 12px; border: 2px solid var(--border-light); border-radius: 8px; background-color: var(--bg-light); color: var(--text-light);">
-                    <option value="Frigo">🧊 Frigo</option>
-                    <option value="Freezer">❄️ Freezer</option>
-                    <option value="Dispensa">📦 Dispensa</option>
-                </select>
-                <input type="date" id="foodExpiry" />
-                <button class="btn" onclick="addFoodItem()">Aggiungi</button>
+            <h2>🍲 Dispensa & Spesa</h2>
+            <div class="dispensa-header">
+                <button class="filter-btn active" onclick="setDispensaTab('Frigo')">🧊 Frigo</button>
+                <button class="filter-btn" onclick="setDispensaTab('Freezer')">❄️ Freezer</button>
+                <button class="filter-btn" onclick="setDispensaTab('Dispensa')">📦 Dispensa</button>
+                <button class="filter-btn" onclick="setDispensaTab('Spesa')">🛒 Spesa</button>
             </div>
-            
-            <div class="category-filter">
-                <button class="filter-btn active" onclick="filterFood('all')">Tutti</button>
-                <button class="filter-btn" onclick="filterFood('Frigo')">🧊 Frigo</button>
-                <button class="filter-btn" onclick="filterFood('Freezer')">❄️ Freezer</button>
-                <button class="filter-btn" onclick="filterFood('Dispensa')">📦 Dispensa</button>
+            <div class="input-group" id="dispensaInputGroup">
+                <!-- dinamico -->
             </div>
-            
-            <div class="list-container" id="foodList"></div>
+            <div class="list-container" id="dispensaList"></div>
         </section>
 
         <!-- CICLO SECTION -->
-        <section class="section" id="cycleSection">
-            <h2>🌸 Tracker Mestruale</h2>
-            
-            <div class="cycle-info">
-                <h3>Informazioni Ciclo</h3>
-                <div id="cycleStats"></div>
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label><strong>Ultimo ciclo:</strong></label>
-                <input type="date" id="lastCycleDate" style="width: 100%; padding: 10px; margin-top: 5px; border: 2px solid var(--border-light); border-radius: 8px; background-color: var(--bg-light); color: var(--text-light);">
-                <button class="btn" onclick="saveCycleData()" style="margin-top: 10px; width: 100%;">Salva</button>
-            </div>
-
-            <h3 style="margin-top: 20px; margin-bottom: 10px;">Calendario</h3>
-            <div class="cycle-calendar" id="cycleCalendar"></div>
-
-            <div class="symptoms-list">
+        <!-- rimosso, integrato in wellness -->
                 <h3 style="margin-bottom: 10px;">Sintomi Oggi</h3>
                 <div class="symptom-item">
                     <input type="checkbox" id="symptom-cramps" onchange="saveSymptomsData()">
@@ -824,35 +790,12 @@
 
         <!-- WELLNESS SECTION -->
         <section class="section" id="wellnessSection">
-            <h2>✨ Checklist Wellness</h2>
-            
-            <div class="checklist">
-                <div class="checklist-item" id="checkbox-mood">
-                    <input type="checkbox" id="wellness-mood" onchange="updateWellnessChart()">
-                    <label for="wellness-mood">😊 Umore positivo</label>
-                </div>
-                <div class="checklist-item" id="checkbox-energy">
-                    <input type="checkbox" id="wellness-energy" onchange="updateWellnessChart()">
-                    <label for="wellness-energy">⚡ Energia buona</label>
-                </div>
-                <div class="checklist-item" id="checkbox-water">
-                    <input type="checkbox" id="wellness-water" onchange="updateWellnessChart()">
-                    <label for="wellness-water">💧 Acqua (2L+)</label>
-                </div>
-                <div class="checklist-item" id="checkbox-sleep">
-                    <input type="checkbox" id="wellness-sleep" onchange="updateWellnessChart()">
-                    <label for="wellness-sleep">😴 Sonno (7-8h)</label>
-                </div>
-                <div class="checklist-item" id="checkbox-movement">
-                    <input type="checkbox" id="wellness-movement" onchange="updateWellnessChart()">
-                    <label for="wellness-movement">🚶 Movimento</label>
-                </div>
+            <h2>✨ Wellness</h2>
+            <div class="input-group">
+                <button class="btn btn-small" onclick="recordEvent('toilette')">🚽 Toilette</button>
+                <button class="btn btn-small" onclick="recordEvent('rapport')">💛 Rapporto</button>
             </div>
-
-            <div class="chart-container">
-                <h3>Grafico Ultimi 30 Giorni</h3>
-                <div class="chart-bars" id="wellnessChart"></div>
-            </div>
+            <div id="wellnessCalendar" class="cycle-calendar" style="margin-top:20px;"></div>
         </section>
 
         <!-- PROMEMORIA SECTION -->
